@@ -18,11 +18,10 @@ fun NavigationWrapper() {
         }
 
         composable<Registro> {
-            RegistroScreen { navController.navigate(Login){
-                popUpTo<Login>{inclusive = true}
-            } }
-        }
 
+            RegistroScreen(navController)
+
+        }
     }
 
 }

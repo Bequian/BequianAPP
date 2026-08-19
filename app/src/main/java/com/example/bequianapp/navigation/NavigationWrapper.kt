@@ -5,14 +5,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bequianapp.screens.LoginScreen
+import com.example.bequianapp.screens.RegistroScreen
 
 
 @Composable
 fun NavigationWrapper() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Login){
+
         composable<Login> {
-            LoginScreen()
+            LoginScreen { navController.navigate(Registro) }
+        }
+
+        composable<Registro> {
+            RegistroScreen { navController.navigate(Login){
+                popUpTo<Login>{inclusive = true}
+            } }
         }
 
     }

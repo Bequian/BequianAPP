@@ -1,7 +1,9 @@
 package com.example.bequianapp.screens
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
@@ -22,10 +25,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,6 +38,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,12 +57,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.bequianapp.R
 import com.example.bequianapp.data.Usuarios
 
 @Composable
-fun RegistroScreen( navController: NavController){
+fun RegistroScreen( navigateBack: () -> Unit ){
 
     var correo by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -75,6 +80,12 @@ fun RegistroScreen( navController: NavController){
     val opcionesTexto = listOf("Pequeño", "Mediano", "Grande")
     var textoSeleccionado by remember { mutableStateOf(opcionesTexto[1]) }
 
+    val logoActual =
+        if (isSystemInDarkTheme()) {
+            R.drawable.helpi_banner_darkmode
+        } else {
+            R.drawable.helpi_banner
+        }
 
     Column(
 
@@ -88,7 +99,7 @@ fun RegistroScreen( navController: NavController){
     ){
         Image(
 
-            painter = painterResource(id = R.drawable.helpi_banner),
+            painter = painterResource(id = logoActual),
             contentDescription = "Logotipo de la aplicación Helpi: Conectándote con el mundo",
             modifier = Modifier
                 .fillMaxWidth()
@@ -291,20 +302,61 @@ fun RegistroScreen( navController: NavController){
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         if (errorMsg.isNotEmpty()) {
-
-            Text(text = errorMsg, color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-
+            Surface(
+                color = MaterialTheme.colorScheme.errorContainer,
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Alerta de error",
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
         }
+
         if (registroExitoso) {
-
-            Text(text = "¡Registro exitoso!", color = Color.Green, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-
+            Surface(
+                color = Color(0xFFE8F5E9),
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Éxito",
+                        tint = Color(0xFF2E7D32)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "¡Registro exitoso! Ya puedes iniciar sesión.",
+                        color = Color(0xFF2E7D32),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
 
@@ -315,12 +367,20 @@ fun RegistroScreen( navController: NavController){
                     errorMsg = "Por favor, completa todos los campos."
                     registroExitoso = false
 
-                } else if (password.length < 6) {
+                }
+                else if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+
+                    errorMsg = "Por favor, ingresa un correo válido (ej: nombre@correo.com)."
+                    registroExitoso = false
+
+                }
+                else if (password.length < 6) {
 
                     errorMsg = "La contraseña debe tener al menos 6 caracteres."
                     registroExitoso = false
 
-                } else {
+                }
+                else {
 
                     val indiceVacio = Usuarios.indexOfFirst { it == null }
 
@@ -356,7 +416,7 @@ fun RegistroScreen( navController: NavController){
             fontSize = 16.sp,
             modifier = Modifier.clickable {
 
-                navController.popBackStack()
+                navigateBack()
 
             }
         )

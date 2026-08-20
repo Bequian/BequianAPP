@@ -15,20 +15,23 @@ fun NavigationWrapper() {
     NavHost(navController = navController, startDestination = Login){
 
         composable<Login> {
-            LoginScreen(navController, navController.navigate(RecuperarPassScreen()))
+            LoginScreen (
+                { navController.navigate(Registro) },
+                { navController.navigate(Recuperar) }
+            )
+
         }
 
         composable<Registro> {
 
-            RegistroScreen(navController)
+            RegistroScreen({ navController.navigate(Login) })
 
         }
 
         composable<Recuperar> {
 
-            RecuperarPassScreen(navController)
+            RecuperarPassScreen({ navController.navigate(Login) })
 
         }
     }
-
 }

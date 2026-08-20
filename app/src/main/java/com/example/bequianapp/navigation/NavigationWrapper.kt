@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bequianapp.screens.LoginScreen
+import com.example.bequianapp.screens.RecuperarPassScreen
 import com.example.bequianapp.screens.RegistroScreen
 
 
@@ -14,12 +15,18 @@ fun NavigationWrapper() {
     NavHost(navController = navController, startDestination = Login){
 
         composable<Login> {
-            LoginScreen { navController.navigate(Registro) }
+            LoginScreen(navController, navController.navigate(RecuperarPassScreen()))
         }
 
         composable<Registro> {
 
             RegistroScreen(navController)
+
+        }
+
+        composable<Recuperar> {
+
+            RecuperarPassScreen(navController)
 
         }
     }

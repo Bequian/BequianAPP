@@ -270,23 +270,31 @@ fun LoginScreen(
                     loginExito = false
 
                 }
-                else if(Usuarios.contains(correo)) {
+                else{
 
-                    if(password.length >= 6){
+                    val usuarioEncontrado = Usuarios.find {it?.correo == correo}
 
-                        errorMsg = ""
-                        navigateToHome(correo)
+                    if( usuarioEncontrado != null ){
+
+                        if(usuarioEncontrado.password == password){
+
+                            errorMsg = ""
+                            navigateToHome(correo)
+
+                        }else{
+
+                            errorMsg = "Contraseña incorrecta"
+
+                        }
 
                     } else {
 
-                        errorMsg = "Contraseña incorrecta."
+                        errorMsg = "El usuario no existe. Por favor, regístrate."
 
                     }
 
                 }
-                else {
-                    errorMsg = "El usuario no exister, Por favor registrate."
-                }
+
 
             },
             modifier = Modifier

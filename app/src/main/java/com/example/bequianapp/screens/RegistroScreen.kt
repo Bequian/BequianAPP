@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 import com.example.bequianapp.R
+import com.example.bequianapp.data.Usuario
 import com.example.bequianapp.data.Usuarios
 
 @Composable
@@ -399,7 +400,7 @@ fun RegistroScreen( navigateBack: () -> Unit ){
 
                     if (indiceVacio != -1) {
 
-                        Usuarios[indiceVacio] = correo
+                        Usuarios[indiceVacio] = Usuario(correo = correo, password = password)
                         errorMsg = ""
                         registroExitoso = true
 

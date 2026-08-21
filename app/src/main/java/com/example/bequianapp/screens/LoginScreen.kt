@@ -49,11 +49,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bequianapp.R
-
+import com.example.bequianapp.data.Usuarios
 
 
 @Composable
-fun LoginScreen( navigateToRegistro: () -> Unit, navigateToRecuperar: () -> Unit ){
+fun LoginScreen(
+    navigateToRegistro: () -> Unit,
+    navigateToRecuperar: () -> Unit,
+    navigateToHome: (String) -> Unit
+){
 
     var correo by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -265,6 +269,23 @@ fun LoginScreen( navigateToRegistro: () -> Unit, navigateToRecuperar: () -> Unit
                     errorMsg = "Por favor, ingresa un correo válido (Ej: nombre@correo.cl)"
                     loginExito = false
 
+                }
+                else if(Usuarios.contains(correo)) {
+
+                    if(password.length >= 6){
+
+                        errorMsg = ""
+                        navigateToHome(correo)
+
+                    } else {
+
+                        errorMsg = "Contraseña incorrecta."
+
+                    }
+
+                }
+                else {
+                    errorMsg = "El usuario no exister, Por favor registrate."
                 }
 
             },

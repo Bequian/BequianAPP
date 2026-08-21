@@ -9,3 +9,6 @@ object Registro
 
 @Serializable
 object Recuperar
+
+@Serializable
+data class Home (val correo: String)

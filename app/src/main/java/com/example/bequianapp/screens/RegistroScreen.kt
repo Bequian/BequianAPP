@@ -57,6 +57,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import com.example.bequianapp.R
 import com.example.bequianapp.data.Usuarios
 
@@ -86,6 +88,17 @@ fun RegistroScreen( navigateBack: () -> Unit ){
         } else {
             R.drawable.helpi_banner
         }
+
+    LaunchedEffect(key1 = registroExitoso) {
+
+        if (registroExitoso) {
+
+            delay(2000L)
+            navigateBack()
+
+        }
+
+    }
 
     Column(
 

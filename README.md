@@ -31,5 +31,5 @@ Se utilizo `Kotlin Serialization` para crear objetos para cada pantalla y se agr
 Archivo para la configuracion del NavHost y NavController, se especifico la pantalla de inicio Login
 
 
-## 🎨 Consideraciones de Accesibilidad
+## Consideraciones de Accesibilidad
 Textos e Inputs de mayor tamaño

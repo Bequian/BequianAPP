@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+// Pantalla home simple que muestra el correo del usuario conectado.
 @Composable
 fun HomeScreen(
     correoUsuario: String,
@@ -24,45 +25,35 @@ fun HomeScreen(
 ){
 
     Column(
-
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-
     ){
-
+        // Mensaje de bienvenida
         Text(
-
             text = "Bienvenido!",
             fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
-
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Muestra el correo del usuario conectado
         Text(
-
             text = correoUsuario,
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium
-
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botón para volver al Login
         Button(
-
             onClick = { onLogout() },
             modifier = Modifier.fillMaxWidth().height(56.dp)
-
         ) {
-
             Text("Cerrar Sesión", fontSize = 20.sp)
-
         }
-
     }
-
 }

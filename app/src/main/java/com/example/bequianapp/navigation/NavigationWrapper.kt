@@ -11,28 +11,34 @@ import com.example.bequianapp.screens.RecuperarPassScreen
 import com.example.bequianapp.screens.RegistroScreen
 
 
+// Función principal que gestiona la navegación de la app
 @Composable
 fun NavigationWrapper() {
+
     val navController = rememberNavController()
+    // Definición del NavHost con la pantalla de Login como inicio
     NavHost(navController = navController, startDestination = Login ){
 
+        // Config ruta pantalla login
         composable<Login> {
             LoginScreen (
-                { navController.navigate(Registro) },
-                { navController.navigate(Recuperar) },
-                { correo -> navController.navigate(Home(correo = correo))}
+                navigateToRegistro = { navController.navigate(Registro) },
+                navigateToRecuperar = { navController.navigate(Recuperar) },
+                navigateToHome = { correo -> navController.navigate(Home(correo = correo))}
             )
 
         }
 
+        // Config ruta pantalla Registro
         composable<Registro> {
-
-            RegistroScreen{ navController.navigate(Login){
-                popUpTo<Login>{inclusive = true}
-            } }
-
+            RegistroScreen{ 
+                navController.navigate(Login){
+                    popUpTo<Login>{inclusive = true} // Limpia el historial para no volver atrás al registrarse
+                } 
+            }
         }
 
+        // Config ruta pantalla Recuperar
         composable<Recuperar> {
 
             RecuperarPassScreen{ navController.navigate(Login){
@@ -43,6 +49,7 @@ fun NavigationWrapper() {
 
         }
 
+        // Config ruta pantalla Home, incluye el parametro correo para mostrar.
         composable<Home> { backStackEntry ->
 
             val homeData = backStackEntry.toRoute<Home>()

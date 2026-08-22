@@ -52,21 +52,25 @@ import com.example.bequianapp.R
 import com.example.bequianapp.data.Usuarios
 
 
+// Pantalla inicial de Inicio de Sesión
 @Composable
 fun LoginScreen(
     navigateToRegistro: () -> Unit,
     navigateToRecuperar: () -> Unit,
     navigateToHome: (String) -> Unit
 ){
-
+    // Variables de estado para capturar los datos ingresados
     var correo by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Control de visibilidad de la contraseña
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Mensajes de error y estado de éxito
     var errorMsg by remember { mutableStateOf("")}
     var loginExito by remember { mutableStateOf(false)}
 
+    // Selección de logo según el tema del sistema (Claro/Oscuro)
     val logoActual =
         if (isSystemInDarkTheme()){
             R.drawable.helpi_logo_darkmode
@@ -255,47 +259,35 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botón para procesar el ingreso
         Button(
             onClick = {
-
+                // Validación de campos vacíos
                 if(correo.isBlank() || password.isBlank()){
-
                     errorMsg = "Por favor, completa todos los campos"
                     loginExito = false
-
                 }
+                // Validación de formato de correo
                 else if(!Patterns.EMAIL_ADDRESS.matcher(correo).matches()){
-
                     errorMsg = "Por favor, ingresa un correo válido (Ej: nombre@correo.cl)"
                     loginExito = false
-
                 }
                 else{
-
+                    // Buscar si el usuario existe en el arreglo de la base de datos simulada
                     val usuarioEncontrado = Usuarios.find {it?.correo == correo}
 
                     if( usuarioEncontrado != null ){
-
+                        // Si existe, verificar la contraseña
                         if(usuarioEncontrado.password == password){
-
                             errorMsg = ""
                             navigateToHome(correo)
-
                         }else{
-
                             errorMsg = "Contraseña incorrecta"
-
                         }
-
                     } else {
-
                         errorMsg = "El usuario no existe. Por favor, regístrate."
-
                     }
-
                 }
-
-
             },
             modifier = Modifier
                 .fillMaxWidth()

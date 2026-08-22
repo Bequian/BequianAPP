@@ -54,22 +54,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bequianapp.R
 
+// Modelo simple para las opciones de recuperación
 data class MetodoRecuperacion(val titulo: String, val icono: ImageVector, val descripcion: String)
 
+// Pantalla para la recuperación de contraseña
 @Composable
 fun RecuperarPassScreen( navigateBack: () -> Unit ) {
 
+    // Estados para mostrar en pantalla
     var metodoSeleccionado by remember { mutableStateOf("") }
     var datoIngresado by remember { mutableStateOf("") }
     var mensajeEnviado by remember { mutableStateOf(false) }
 
     var errorMsg by remember { mutableStateOf("")}
 
+    // Metodos de recuperación
     val metodos = listOf(
         MetodoRecuperacion("Correo", Icons.Default.Email, "Enviar instrucciones al correo"),
         MetodoRecuperacion("SMS", Icons.Default.Phone, "Enviar código al celular")
     )
 
+    // Estado que muestra la imagen dependiendo del modo oscuro del sistema
     val logoActual =
         if(isSystemInDarkTheme()){
             R.drawable.helpi_banner_darkmode
@@ -137,6 +142,7 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Grilla con estados de recuperación
         LazyVerticalGrid(
 
             columns = GridCells.Fixed(2),
@@ -149,16 +155,17 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
         ) {
             items(metodos) { metodo ->
                 Card(
-
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp)
                         .clickable(
                             onClickLabel = "Seleccionar método por ${metodo.titulo}"
                         ) {
+
                             metodoSeleccionado = metodo.titulo
                             mensajeEnviado = false
                             datoIngresado = ""
+
                         },
 
                     border = BorderStroke(
@@ -206,27 +213,23 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Muestra el campo texto según metodo de recuperación
         if (metodoSeleccionado.isNotEmpty()) {
 
             val labelTexto = if (metodoSeleccionado == "Correo") "Ingresa tu correo" else "Ingresa tu celular"
             val tipoTeclado = if (metodoSeleccionado == "Correo") KeyboardType.Email else KeyboardType.Phone
 
             OutlinedTextField(
-
                 value = datoIngresado,
                 onValueChange = { nuevoValor ->
-
+                    // Según modo de recuperación, si es teléfono valida que sea numero y menor o oigual a 8
                     if (metodoSeleccionado == "SMS") {
                         val soloNumeros = nuevoValor.filter { it.isDigit() }
-
                         if (soloNumeros.length <= 8) {
                             datoIngresado = soloNumeros
                         }
-
                     } else {
-
                         datoIngresado = nuevoValor
-
                     }
                 },
                 label = { Text(labelTexto, fontSize = 18.sp) },
@@ -330,31 +333,22 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            // Botón para simular el envío de instrucciones
             Button(
-
                 onClick = {
-
                     errorMsg = ""
                     mensajeEnviado = false
 
+                    // Valida según metodo seleccionado
                     if (datoIngresado.isBlank()) {
-
                         errorMsg = "Por favor, ingresa los datos solicitados."
-
                     } else if (metodoSeleccionado == "Correo" && !Patterns.EMAIL_ADDRESS.matcher(datoIngresado).matches()) {
-
                         errorMsg = "Por favor, ingresa un correo válido."
-
                     } else if (metodoSeleccionado == "SMS" && datoIngresado.length < 8) {
-
                         errorMsg = "El número de celular debe tener 8 dígitos."
-
                     } else {
-
                         mensajeEnviado = true
-
                     }
-
                 },
                 modifier = Modifier
                     .fillMaxWidth()

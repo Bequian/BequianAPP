@@ -62,23 +62,28 @@ import kotlinx.coroutines.delay
 import com.example.bequianapp.R
 import com.example.bequianapp.data.Usuario
 import com.example.bequianapp.data.Usuarios
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun RegistroScreen( navigateBack: () -> Unit ){
 
+    // Estados para correo y passowrd
     var correo by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Control para mostrar o oculatar pass
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Control de mensajes y estados
     var errorMsg by remember { mutableStateOf("") }
     var registroExitoso by remember { mutableStateOf(false) }
 
+    // Controles para opciopnes de accesibilida (Simulados)
     var activarVibracion by remember { mutableStateOf(true)}
-
     val opcionesContraste = listOf("Normal", "Alto Contrase")
     var contrasteSelect by remember {mutableStateOf(opcionesContraste[0])}
 
+    // Control para mostrar select con opciones de texto
     var expandirMenu by remember { mutableStateOf(false) }
     val opcionesTexto = listOf("Pequeño", "Mediano", "Grande")
     var textoSeleccionado by remember { mutableStateOf(opcionesTexto[1]) }
@@ -90,15 +95,14 @@ fun RegistroScreen( navigateBack: () -> Unit ){
             R.drawable.helpi_banner
         }
 
+    // Agbregamos un daley de 2 segundos, luego volvemos al Login despues de un registro exitoso
     LaunchedEffect(key1 = registroExitoso) {
 
         if (registroExitoso) {
-
-            delay(2000L)
+            delay(2.seconds)
             navigateBack()
 
         }
-
     }
 
     Column(
@@ -372,43 +376,35 @@ fun RegistroScreen( navigateBack: () -> Unit ){
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botón de registro
         Button(
-
             onClick = {
-
+                // Valida si correo o password esta vacio
                 if (correo.isBlank() || password.isBlank()) {
-
                     errorMsg = "Por favor, completa todos los campos."
                     registroExitoso = false
-
                 }
                 else if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-
                     errorMsg = "Por favor, ingresa un correo válido (ej: nombre@correo.com)."
                     registroExitoso = false
-
                 }
                 else if (password.length < 6) {
-
                     errorMsg = "La contraseña debe tener al menos 6 caracteres."
                     registroExitoso = false
-
                 }
                 else {
-
+                    // Busca el primer espacio vacio del arreglo
                     val indiceVacio = Usuarios.indexOfFirst { it == null }
 
                     if (indiceVacio != -1) {
-
+                        // Guardar valores en el espacio encontrado
                         Usuarios[indiceVacio] = Usuario(correo = correo, password = password)
                         errorMsg = ""
                         registroExitoso = true
-
                     } else {
-
+                        // Muestra alerta si ya hay 5 registros en el arreglo
                         errorMsg = "Límite de usuarios alcanzado (Máx 5)."
                         registroExitoso = false
-
                     }
                 }
             },

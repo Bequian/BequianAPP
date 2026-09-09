@@ -1,6 +1,5 @@
 package com.example.bequianapp.screens
 
-import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +48,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bequianapp.R
-import com.example.bequianapp.data.Usuarios
+import com.example.bequianapp.data.buscarUsuario
+import com.example.bequianapp.data.esCorreoValido
+import com.example.bequianapp.data.validar
 
 
 // Pantalla inicial de Inicio de Sesión
@@ -262,32 +263,50 @@ fun LoginScreen(
         // Botón para procesar el ingreso
         Button(
             onClick = {
-                // Validación de campos vacíos
-                if(correo.isBlank() || password.isBlank()){
+
+                // Implementación de validación como Lambda hacia la función validar en RepoUsuario.kt
+                // Valída campo vacío
+                if ( !validar ( correo ) { it.isNotBlank() } || !validar ( password ) { it.isNotBlank() }){
+
                     errorMsg = "Por favor, completa todos los campos"
                     loginExito = false
+
                 }
-                // Validación de formato de correo
-                else if(!Patterns.EMAIL_ADDRESS.matcher(correo).matches()){
+                // Valída formato de correo usando extensión esCorreoValido
+                else if( !validar ( correo, String::esCorreoValido) ){
+
                     errorMsg = "Por favor, ingresa un correo válido (Ej: nombre@correo.cl)"
                     loginExito = false
-                }
-                else{
-                    // Buscar si el usuario existe en el arreglo de la base de datos simulada
-                    val usuarioEncontrado = Usuarios.find {it?.correo == correo}
 
-                    if( usuarioEncontrado != null ){
-                        // Si existe, verificar la contraseña
-                        if(usuarioEncontrado.password == password){
+                }
+                else {
+
+                    val usuarioEncontrado = buscarUsuario(correo)
+
+                    if ( usuarioEncontrado != null ){
+
+                        // si usuario existe compara contraseñas
+                        if ( usuarioEncontrado.password == password ) {
+
                             errorMsg = ""
                             navigateToHome(correo)
-                        }else{
-                            errorMsg = "Contraseña incorrecta"
+
                         }
-                    } else {
-                        errorMsg = "El usuario no existe. Por favor, regístrate."
+                        else {
+
+                            errorMsg = "Contraseña Incorrecta"
+
+                        }
+
                     }
+                    else {
+
+                        errorMsg = "El usuario no existe. Por favor, Registrate."
+
+                    }
+
                 }
+
             },
             modifier = Modifier
                 .fillMaxWidth()

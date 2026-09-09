@@ -1,6 +1,5 @@
 package com.example.bequianapp.screens
 
-import android.util.Patterns
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -53,6 +52,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bequianapp.R
+import com.example.bequianapp.data.esCorreoValido
+import com.example.bequianapp.data.validar
 
 // Modelo simple para las opciones de recuperación
 data class MetodoRecuperacion(val titulo: String, val icono: ImageVector, val descripcion: String)
@@ -339,16 +340,32 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
                     errorMsg = ""
                     mensajeEnviado = false
 
-                    // Valida según metodo seleccionado
-                    if (datoIngresado.isBlank()) {
+                    // Ciclo de selección de la opción de recuperación
+
+                    // Valida si los campos están vacíos
+                    if ( !validar( datoIngresado) { it.isNotBlank() }) {
+
                         errorMsg = "Por favor, ingresa los datos solicitados."
-                    } else if (metodoSeleccionado == "Correo" && !Patterns.EMAIL_ADDRESS.matcher(datoIngresado).matches()) {
-                        errorMsg = "Por favor, ingresa un correo válido."
-                    } else if (metodoSeleccionado == "SMS" && datoIngresado.length < 8) {
-                        errorMsg = "El número de celular debe tener 8 dígitos."
-                    } else {
-                        mensajeEnviado = true
+
                     }
+                    // Ciclo recuperación por correo, válida si el correo tiene formato válido
+                    else if( metodoSeleccionado == "Correo" && !validar( datoIngresado, String::esCorreoValido)) {
+
+                        errorMsg = "Por favor, ingresa un correo válido."
+
+                    }
+                    // Ciclo recuperación por SMS, válida si el celular tiene 8 digitos
+                    else if( metodoSeleccionado == "SMS" && datoIngresado.length < 8) {
+
+                        errorMsg = "El número de celular debe tener 8 dígitos"
+
+                    }
+                    else {
+
+                        mensajeEnviado = true
+
+                    }
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()

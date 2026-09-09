@@ -1,6 +1,5 @@
 package com.example.bequianapp.screens
 
-import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -60,8 +59,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 import com.example.bequianapp.R
-import com.example.bequianapp.data.Usuario
-import com.example.bequianapp.data.Usuarios
+import com.example.bequianapp.data.LimiteUsuarioException
+import com.example.bequianapp.data.agregarUsuarios
+import com.example.bequianapp.data.buscarUsuario
+import com.example.bequianapp.data.esCorreoValido
+import com.example.bequianapp.data.esPasswordValida
+import com.example.bequianapp.data.validar
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -238,6 +241,8 @@ fun RegistroScreen( navigateBack: () -> Unit ){
         )
         opcionesContraste.forEach { opcion ->
 
+            if(opcion.isBlank()) return@forEach
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -379,34 +384,50 @@ fun RegistroScreen( navigateBack: () -> Unit ){
         // Botón de registro
         Button(
             onClick = {
-                // Valida si correo o password esta vacio
-                if (correo.isBlank() || password.isBlank()) {
+
+                val usuarioEncontrado =  buscarUsuario(correo)
+
+                if ( !validar ( correo ) { it.isNotBlank() } || !validar( password ) { it.isNotBlank() } ){
+
                     errorMsg = "Por favor, completa todos los campos."
                     registroExitoso = false
+
                 }
-                else if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-                    errorMsg = "Por favor, ingresa un correo válido (ej: nombre@correo.com)."
+                else if (usuarioEncontrado != null) {
+
+                    errorMsg = "El Correo ya se encuentra registrado"
                     registroExitoso = false
+
                 }
-                else if (password.length < 6) {
+                else if ( !validar( correo, String::esCorreoValido)) {
+
+                    errorMsg = "por favor, ingresa un correo válido (ej: nombre@nombre.cl)."
+                    registroExitoso = false
+
+                }
+                else if ( !password.esPasswordValida) {
+
                     errorMsg = "La contraseña debe tener al menos 6 caracteres."
                     registroExitoso = false
+
                 }
                 else {
-                    // Busca el primer espacio vacio del arreglo
-                    val indiceVacio = Usuarios.indexOfFirst { it == null }
 
-                    if (indiceVacio != -1) {
-                        // Guardar valores en el espacio encontrado
-                        Usuarios[indiceVacio] = Usuario(correo = correo, password = password)
+                    try {
+
+                        agregarUsuarios( correo = correo, password = password )
                         errorMsg = ""
                         registroExitoso = true
-                    } else {
-                        // Muestra alerta si ya hay 5 registros en el arreglo
-                        errorMsg = "Límite de usuarios alcanzado (Máx 5)."
+
+                    } catch (e: LimiteUsuarioException) {
+
+                        errorMsg = e.message ?: "No se pudo completar el registro."
                         registroExitoso = false
+
                     }
+
                 }
+
             },
             modifier = Modifier
                 .fillMaxWidth()

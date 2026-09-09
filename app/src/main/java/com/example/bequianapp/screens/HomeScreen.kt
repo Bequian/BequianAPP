@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,8 +23,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun HomeScreen(
     correoUsuario: String,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
 ){
+
+    val haptic = LocalHapticFeedback.current
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -45,6 +49,19 @@ fun HomeScreen(
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botón para test de vibración
+
+        Button(
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            modifier = Modifier.fillMaxWidth().height(56.dp)
+        ) {
+            Text("Vibración", fontSize = 20.sp)
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

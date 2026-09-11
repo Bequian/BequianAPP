@@ -13,4 +13,4 @@ object Recuperar
 
 // Data class para definir ruta HOME con parametro correo
 @Serializable
-data class Home (val correo: String)
+data class Home (val correo: String, val vibration: Boolean)

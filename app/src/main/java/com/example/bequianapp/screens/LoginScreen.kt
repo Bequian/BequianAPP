@@ -58,7 +58,7 @@ import com.example.bequianapp.data.validar
 fun LoginScreen(
     navigateToRegistro: () -> Unit,
     navigateToRecuperar: () -> Unit,
-    navigateToHome: (String) -> Unit
+    navigateToHome: (String, Boolean) -> Unit
 ){
     // Variables de estado para capturar los datos ingresados
     var correo by remember { mutableStateOf("") }
@@ -289,7 +289,7 @@ fun LoginScreen(
                         if ( usuarioEncontrado.password == password ) {
 
                             errorMsg = ""
-                            navigateToHome(correo)
+                            navigateToHome(correo, usuarioEncontrado.vibration)
 
                         }
                         else {

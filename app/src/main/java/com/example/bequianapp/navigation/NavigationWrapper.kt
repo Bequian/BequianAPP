@@ -24,7 +24,7 @@ fun NavigationWrapper() {
             LoginScreen (
                 navigateToRegistro = { navController.navigate(Registro) },
                 navigateToRecuperar = { navController.navigate(Recuperar) },
-                navigateToHome = { correo -> navController.navigate(Home(correo = correo))}
+                navigateToHome = { correo, vibration -> navController.navigate(Home(correo = correo, vibration = vibration))}
             )
 
         }
@@ -56,6 +56,7 @@ fun NavigationWrapper() {
 
             HomeScreen(
                 correoUsuario = homeData.correo,
+                vibrationUsuario = homeData.vibration,
                 onLogout = {
 
                     navController.navigate(Login) {

@@ -23,10 +23,12 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun HomeScreen(
     correoUsuario: String,
+    vibrationUsuario: Boolean,
     onLogout: () -> Unit,
 ){
 
     val haptic = LocalHapticFeedback.current
+    val textoVibration = if (vibrationUsuario) "Activado" else "Desactivado"
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -55,12 +57,17 @@ fun HomeScreen(
         // Botón para test de vibración
 
         Button(
+
             onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                if(vibrationUsuario){
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+
             },
             modifier = Modifier.fillMaxWidth().height(56.dp)
         ) {
-            Text("Vibración", fontSize = 20.sp)
+            Text("Vibración $textoVibration", fontSize = 20.sp)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

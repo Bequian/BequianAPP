@@ -376,6 +376,7 @@ fun RegistroScreen( navigateBack: () -> Unit ){
                         fontSize = 16.sp
                     )
                 }
+
             }
         }
 
@@ -415,7 +416,7 @@ fun RegistroScreen( navigateBack: () -> Unit ){
 
                     try {
 
-                        agregarUsuarios( correo = correo, password = password )
+                        agregarUsuarios( correo = correo, password = password, vibration = activarVibracion )
                         errorMsg = ""
                         registroExitoso = true
 

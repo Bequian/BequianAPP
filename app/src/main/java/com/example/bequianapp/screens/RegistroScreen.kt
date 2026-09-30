@@ -1,8 +1,6 @@
 package com.example.bequianapp.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +16,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,32 +54,43 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
-import com.example.bequianapp.R
-import com.example.bequianapp.data.LimiteUsuarioException
-import com.example.bequianapp.data.agregarUsuarios
-import com.example.bequianapp.data.buscarUsuario
-import com.example.bequianapp.data.esCorreoValido
-import com.example.bequianapp.data.esPasswordValida
-import com.example.bequianapp.data.validar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.bequianapp.data.AuthService
+import com.example.bequianapp.data.HelpiRepository
+import com.example.bequianapp.data.Resultado
+import com.example.bequianapp.data.Usuario
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun RegistroScreen( navigateBack: () -> Unit ){
+fun RegistroScreen(
 
-    // Estados para correo y passowrd
+    authService: AuthService,
+    repo: HelpiRepository,
+    navigateBack: () -> Unit,
+    navigateToHome: () -> Unit
+
+){
+
+    // Estados para correo y password
     var correo by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Control para mostrar o oculatar pass
+    // Control para mostrar u ocultar pass
     var passwordVisible by remember { mutableStateOf(false) }
 
     // Control de mensajes y estados
     var errorMsg by remember { mutableStateOf("") }
     var registroExitoso by remember { mutableStateOf(false) }
 
-    // Controles para opciopnes de accesibilida (Simulados)
+    // Estado de carga mientras Firebase responde y scope para lanzar corrutinas
+    var cargando by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    // Controles para opciones de accesibilidad (simulados)
     var activarVibracion by remember { mutableStateOf(true)}
-    val opcionesContraste = listOf("Normal", "Alto Contrase")
+    val opcionesContraste = listOf("Normal", "Alto Contraste")
     var contrasteSelect by remember {mutableStateOf(opcionesContraste[0])}
 
     // Control para mostrar select con opciones de texto
@@ -91,19 +98,13 @@ fun RegistroScreen( navigateBack: () -> Unit ){
     val opcionesTexto = listOf("Pequeño", "Mediano", "Grande")
     var textoSeleccionado by remember { mutableStateOf(opcionesTexto[1]) }
 
-    val logoActual =
-        if (isSystemInDarkTheme()) {
-            R.drawable.helpi_banner_darkmode
-        } else {
-            R.drawable.helpi_banner
-        }
-
-    // Agbregamos un daley de 2 segundos, luego volvemos al Login despues de un registro exitoso
+    // Después de un registro exitoso esperamos 2 segundos y entramos al HomeMenú
+    // (Firebase deja la sesión iniciada automáticamente al crear la cuenta)
     LaunchedEffect(key1 = registroExitoso) {
 
         if (registroExitoso) {
             delay(2.seconds)
-            navigateBack()
+            navigateToHome()
 
         }
     }
@@ -118,17 +119,8 @@ fun RegistroScreen( navigateBack: () -> Unit ){
         verticalArrangement = Arrangement.Center
 
     ){
-        Image(
+        BannerHelpi()
 
-            painter = painterResource(id = logoActual),
-            contentDescription = "Logotipo de la aplicación Helpi: Conectándote con el mundo",
-            modifier = Modifier
-                .fillMaxWidth()
-                .size(120.dp)
-                .padding(top = 16.dp),
-            contentScale = ContentScale.Fit
-
-        )
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -328,52 +320,73 @@ fun RegistroScreen( navigateBack: () -> Unit ){
         Spacer(modifier = Modifier.height(16.dp))
 
         if (errorMsg.isNotEmpty()) {
+
             Surface(
+
                 color = MaterialTheme.colorScheme.errorContainer,
                 shape = MaterialTheme.shapes.small,
                 modifier = Modifier.fillMaxWidth()
+
             ) {
                 Row(
+
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
+
                 ) {
                     Icon(
+
                         imageVector = Icons.Default.Warning,
                         contentDescription = "Alerta de error",
                         tint = MaterialTheme.colorScheme.onErrorContainer
+
                     )
+
                     Spacer(modifier = Modifier.width(8.dp))
+
                     Text(
+
                         text = errorMsg,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
+
                     )
                 }
             }
         }
 
         if (registroExitoso) {
+
             Surface(
+
                 color = Color(0xFFE8F5E9),
                 shape = MaterialTheme.shapes.small,
                 modifier = Modifier.fillMaxWidth()
+
             ) {
                 Row(
+
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
+
                 ) {
                     Icon(
+
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = "Éxito",
                         tint = Color(0xFF2E7D32)
+
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+
                     Text(
-                        text = "¡Registro exitoso! Ya puedes iniciar sesión.",
+
+                        text = "¡Registro exitoso! Ingresando a Helpi...",
                         color = Color(0xFF2E7D32),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
+
                     )
                 }
 
@@ -382,61 +395,62 @@ fun RegistroScreen( navigateBack: () -> Unit ){
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón de registro
+        // Botón de registro: crea la cuenta en Firebase Auth y guarda el perfil en Realtime Database
         Button(
             onClick = {
+                scope.launch {
+                    cargando = true
+                    errorMsg = ""
 
-                val usuarioEncontrado =  buscarUsuario(correo)
+                    when (val resultado = authService.registrar(correo, password)) {
 
-                if ( !validar ( correo ) { it.isNotBlank() } || !validar( password ) { it.isNotBlank() } ){
+                        is Resultado.Exito -> {
 
-                    errorMsg = "Por favor, completa todos los campos."
-                    registroExitoso = false
+                            try {
+                                // resultado dato es el uid del nuevo usuario (Create del CRUD)
+                                repo.guardarPerfil(
+                                    resultado.dato,
 
-                }
-                else if (usuarioEncontrado != null) {
+                                    Usuario(
 
-                    errorMsg = "El Correo ya se encuentra registrado"
-                    registroExitoso = false
+                                        correo = correo.trim(),
+                                        vibracion = activarVibracion,
+                                        contraste = contrasteSelect,
+                                        tamanoTexto = textoSeleccionado
 
-                }
-                else if ( !validar( correo, String::esCorreoValido)) {
+                                    )
+                                )
+                            } catch (e: Exception) {
 
-                    errorMsg = "por favor, ingresa un correo válido (ej: nombre@nombre.cl)."
-                    registroExitoso = false
+                            }
+                            registroExitoso = true
+                        }
 
-                }
-                else if ( !password.esPasswordValida) {
+                        is Resultado.Error -> {
 
-                    errorMsg = "La contraseña debe tener al menos 6 caracteres."
-                    registroExitoso = false
+                            errorMsg = resultado.mensaje
+                            registroExitoso = false
 
-                }
-                else {
-
-                    try {
-
-                        agregarUsuarios( correo = correo, password = password, vibration = activarVibracion )
-                        errorMsg = ""
-                        registroExitoso = true
-
-                    } catch (e: LimiteUsuarioException) {
-
-                        errorMsg = e.message ?: "No se pudo completar el registro."
-                        registroExitoso = false
-
+                        }
                     }
-
+                    cargando = false
                 }
-
             },
+
+            enabled = !cargando && !registroExitoso,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
+            if (cargando) {
 
-            Text("Registrarse", fontSize = 20.sp)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
 
+            } else {
+
+                Text("Registrarse", fontSize = 20.sp)
+
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -446,6 +460,7 @@ fun RegistroScreen( navigateBack: () -> Unit ){
             text = "¿Ya tienes cuenta? Inicia sesión aquí",
             color = MaterialTheme.colorScheme.primary,
             fontSize = 16.sp,
+
             modifier = Modifier.clickable {
 
                 navigateBack()

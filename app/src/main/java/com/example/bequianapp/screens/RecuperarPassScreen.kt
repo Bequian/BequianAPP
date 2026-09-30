@@ -1,9 +1,7 @@
 package com.example.bequianapp.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,45 +41,48 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.bequianapp.R
-import com.example.bequianapp.data.esCorreoValido
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.bequianapp.data.AuthService
+import com.example.bequianapp.data.Resultado
 import com.example.bequianapp.data.validar
+import kotlinx.coroutines.launch
 
 // Modelo simple para las opciones de recuperación
 data class MetodoRecuperacion(val titulo: String, val icono: ImageVector, val descripcion: String)
 
 // Pantalla para la recuperación de contraseña
 @Composable
-fun RecuperarPassScreen( navigateBack: () -> Unit ) {
+fun RecuperarPassScreen(
+
+    authService: AuthService,
+    navigateBack: () -> Unit
+
+) {
 
     // Estados para mostrar en pantalla
     var metodoSeleccionado by remember { mutableStateOf("") }
     var datoIngresado by remember { mutableStateOf("") }
     var mensajeEnviado by remember { mutableStateOf(false) }
-
     var errorMsg by remember { mutableStateOf("")}
+
+    // Estado de carga mientras Firebase responde y scope para lanzar corrutinas
+    var cargando by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     // Metodos de recuperación
     val metodos = listOf(
+
         MetodoRecuperacion("Correo", Icons.Default.Email, "Enviar instrucciones al correo"),
         MetodoRecuperacion("SMS", Icons.Default.Phone, "Enviar código al celular")
-    )
 
-    // Estado que muestra la imagen dependiendo del modo oscuro del sistema
-    val logoActual =
-        if(isSystemInDarkTheme()){
-            R.drawable.helpi_banner_darkmode
-        } else {
-            R.drawable.helpi_banner
-        }
+    )
 
     Column(
 
@@ -93,17 +94,7 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
         verticalArrangement = Arrangement.Center
 
     ) {
-        Image(
-
-            painter = painterResource(id = logoActual),
-            contentDescription = "Logotipo de la aplicación Helpi: Conectándote con el mundo",
-            modifier = Modifier
-                .fillMaxWidth()
-                .size(120.dp)
-                .padding(top = 16.dp),
-            contentScale = ContentScale.Fit
-
-        )
+        BannerHelpi()
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -221,18 +212,27 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
             val tipoTeclado = if (metodoSeleccionado == "Correo") KeyboardType.Email else KeyboardType.Phone
 
             OutlinedTextField(
+
                 value = datoIngresado,
                 onValueChange = { nuevoValor ->
                     // Según modo de recuperación, si es teléfono valida que sea numero y menor o oigual a 8
                     if (metodoSeleccionado == "SMS") {
+
                         val soloNumeros = nuevoValor.filter { it.isDigit() }
+
                         if (soloNumeros.length <= 8) {
+
                             datoIngresado = soloNumeros
+
                         }
+
                     } else {
+
                         datoIngresado = nuevoValor
+
                     }
                 },
+
                 label = { Text(labelTexto, fontSize = 18.sp) },
                 textStyle = LocalTextStyle.current.copy(fontSize = 18.sp),
 
@@ -253,6 +253,7 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
                     imeAction = ImeAction.Done
 
                 ),
+
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -334,28 +335,35 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Botón para simular el envío de instrucciones
+            // Botón para enviar las instrucciones de recuperación
             Button(
                 onClick = {
                     errorMsg = ""
                     mensajeEnviado = false
 
-                    // Ciclo de selección de la opción de recuperación
+                    // Recuperación por correo (REAL): Firebase envía un enlace para crear una nueva contraseña
+                    if (metodoSeleccionado == "Correo") {
 
-                    // Valida si los campos están vacíos
-                    if ( !validar( datoIngresado) { it.isNotBlank() }) {
+                        scope.launch {
+
+                            cargando = true
+
+                            when (val resultado = authService.recuperar(datoIngresado)) {
+
+                                is Resultado.Exito -> mensajeEnviado = true
+                                is Resultado.Error -> errorMsg = resultado.mensaje
+
+                            }
+                            cargando = false
+                        }
+                    }
+                    // Recuperación por SMS (simulada): valida que no esté vacío y que tenga 8 dígitos
+                    else if ( !validar( datoIngresado) { it.isNotBlank() }) {
 
                         errorMsg = "Por favor, ingresa los datos solicitados."
 
                     }
-                    // Ciclo recuperación por correo, válida si el correo tiene formato válido
-                    else if( metodoSeleccionado == "Correo" && !validar( datoIngresado, String::esCorreoValido)) {
-
-                        errorMsg = "Por favor, ingresa un correo válido."
-
-                    }
-                    // Ciclo recuperación por SMS, válida si el celular tiene 8 digitos
-                    else if( metodoSeleccionado == "SMS" && datoIngresado.length < 8) {
+                    else if ( datoIngresado.length < 8) {
 
                         errorMsg = "El número de celular debe tener 8 dígitos"
 
@@ -367,13 +375,20 @@ fun RecuperarPassScreen( navigateBack: () -> Unit ) {
                     }
 
                 },
+                enabled = !cargando,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
+                if (cargando) {
 
-                Text("Enviar instrucciones", fontSize = 20.sp)
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
 
+                } else {
+
+                    Text("Enviar instrucciones", fontSize = 20.sp)
+
+                }
             }
         }
 

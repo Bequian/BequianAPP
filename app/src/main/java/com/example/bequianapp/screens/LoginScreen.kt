@@ -48,17 +48,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bequianapp.R
-import com.example.bequianapp.data.buscarUsuario
-import com.example.bequianapp.data.esCorreoValido
-import com.example.bequianapp.data.validar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.bequianapp.data.AuthService
+import com.example.bequianapp.data.Resultado
+import kotlinx.coroutines.launch
 
 
 // Pantalla inicial de Inicio de Sesión
 @Composable
 fun LoginScreen(
+
+    authService: AuthService,
     navigateToRegistro: () -> Unit,
     navigateToRecuperar: () -> Unit,
-    navigateToHome: (String, Boolean) -> Unit
+    navigateToHome: () -> Unit
+
 ){
     // Variables de estado para capturar los datos ingresados
     var correo by remember { mutableStateOf("") }
@@ -71,7 +76,10 @@ fun LoginScreen(
     var errorMsg by remember { mutableStateOf("")}
     var loginExito by remember { mutableStateOf(false)}
 
-    // Selección de logo según el tema del sistema (Claro/Oscuro)
+    // Estado de carga mientras Firebase responde y scope para lanzar corrutinas
+    var cargando by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     val logoActual =
         if (isSystemInDarkTheme()){
             R.drawable.helpi_logo_darkmode
@@ -101,6 +109,7 @@ fun LoginScreen(
                 .padding(bottom = 5.dp)
 
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -260,61 +269,51 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón para procesar el ingreso
+        // Botón para procesar el ingreso con Firebase Authentication
         Button(
+
             onClick = {
 
-                // Implementación de validación como Lambda hacia la función validar en RepoUsuario.kt
-                // Valída campo vacío
-                if ( !validar ( correo ) { it.isNotBlank() } || !validar ( password ) { it.isNotBlank() }){
+                scope.launch {
 
-                    errorMsg = "Por favor, completa todos los campos"
-                    loginExito = false
+                    cargando = true
+                    errorMsg = ""
+                    // AuthService valida los campos y luego consulta a Firebase
 
-                }
-                // Valída formato de correo usando extensión esCorreoValido
-                else if( !validar ( correo, String::esCorreoValido) ){
+                    when (val resultado = authService.login(correo, password)) {
 
-                    errorMsg = "Por favor, ingresa un correo válido (Ej: nombre@correo.cl)"
-                    loginExito = false
+                        is Resultado.Exito -> {
 
-                }
-                else {
-
-                    val usuarioEncontrado = buscarUsuario(correo)
-
-                    if ( usuarioEncontrado != null ){
-
-                        // si usuario existe compara contraseñas
-                        if ( usuarioEncontrado.password == password ) {
-
-                            errorMsg = ""
-                            navigateToHome(correo, usuarioEncontrado.vibration)
-
-                        }
-                        else {
-
-                            errorMsg = "Contraseña Incorrecta"
+                            loginExito = true
+                            navigateToHome()
 
                         }
 
+                        is Resultado.Error -> {
+
+                            errorMsg = resultado.mensaje
+                            loginExito = false
+
+                        }
                     }
-                    else {
-
-                        errorMsg = "El usuario no existe. Por favor, Registrate."
-
-                    }
-
+                    cargando = false
                 }
-
             },
+            enabled = !cargando,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp)
         ) {
 
-            Text("Ingresar", fontSize = 20.sp)
+            if (cargando) {
 
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
+
+            } else {
+
+                Text("Ingresar", fontSize = 20.sp)
+
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

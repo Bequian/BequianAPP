@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -66,6 +67,7 @@ fun HomeScreen(
     navigateToEscribir: () -> Unit,
     navigateToHablar: () -> Unit,
     navigateToBuscar: () -> Unit,
+    navigateToAyuda: () -> Unit,
     onLogout: () -> Unit
 
 ) {
@@ -89,7 +91,8 @@ fun HomeScreen(
 
         OpcionMenu("Escribir", "Escribe o dicta mensajes y muéstralos en grande", Icons.Default.Edit, navigateToEscribir),
         OpcionMenu("Hablar", "El teléfono lee en voz alta lo que escribes", Icons.AutoMirrored.Filled.VolumeUp, navigateToHablar),
-        OpcionMenu("Buscar dispositivo", "Encuentra tus audífonos y equipos haciéndolos sonar", Icons.Default.Search, navigateToBuscar)
+        OpcionMenu("Buscar dispositivo", "Encuentra tus audífonos y equipos haciéndolos sonar", Icons.Default.Search, navigateToBuscar),
+        OpcionMenu("Ayuda", "Aprende a usar cada función de Helpi", Icons.Default.Info, navigateToAyuda)
 
     )
 

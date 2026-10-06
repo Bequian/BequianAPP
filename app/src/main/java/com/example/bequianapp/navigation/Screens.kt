@@ -12,7 +12,13 @@ object Registro
 object Recuperar
 
 @Serializable
+object Bienvenida
+
+@Serializable
 object Home
+
+@Serializable
+object Ayuda
 
 @Serializable
 object Escribir

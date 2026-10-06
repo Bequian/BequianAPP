@@ -9,6 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.bequianapp.data.AuthService
 import com.example.bequianapp.data.FirebaseAuthRepository
 import com.example.bequianapp.data.HelpiRepository
+import com.example.bequianapp.screens.AyudaScreen
+import com.example.bequianapp.screens.BienvenidaScreen
 import com.example.bequianapp.screens.BuscarDispositivoScreen
 import com.example.bequianapp.screens.EscribirScreen
 import com.example.bequianapp.screens.HablarScreen
@@ -35,8 +37,8 @@ fun NavigationWrapper() {
     val authService = remember { AuthService(FirebaseAuthRepository()) }
     val repo = remember { HelpiRepository() }
 
-    // Si Firebase recuerda una sesión activa, se abre directamente el menú
-    val inicio: Any = remember { if (authService.sesionActiva()) Home else Login }
+    // Si Firebase recuerda una sesión activa, se abre directamente la Bienvenida
+    val inicio: Any = remember { if (authService.sesionActiva()) Bienvenida else Login }
 
     NavHost(navController = navController, startDestination = inicio) {
 
@@ -46,7 +48,7 @@ fun NavigationWrapper() {
                 authService = authService,
                 navigateToRegistro = { navController.navigate(Registro) },
                 navigateToRecuperar = { navController.navigate(Recuperar) },
-                navigateToHome = { navController.navegarLimpiando(Home) }
+                navigateToHome = { navController.navegarLimpiando(Bienvenida) }
             )
         }
 
@@ -56,7 +58,7 @@ fun NavigationWrapper() {
                 authService = authService,
                 repo = repo,
                 navigateBack = { navController.popBackStack() },
-                navigateToHome = { navController.navegarLimpiando(Home) }
+                navigateToHome = { navController.navegarLimpiando(Bienvenida) }
             )
         }
 
@@ -68,6 +70,14 @@ fun NavigationWrapper() {
             )
         }
 
+        // Config ruta Bienvenida (después de iniciar sesión o registrarse)
+        composable<Bienvenida> {
+            BienvenidaScreen(
+                authService = authService,
+                navigateToHome = { navController.navegarLimpiando(Home) }
+            )
+        }
+
         // Config ruta HomeMenú
         composable<Home> {
             HomeScreen(
@@ -76,6 +86,7 @@ fun NavigationWrapper() {
                 navigateToEscribir = { navController.navigate(Escribir) },
                 navigateToHablar = { navController.navigate(Hablar) },
                 navigateToBuscar = { navController.navigate(BuscarDispositivo) },
+                navigateToAyuda = { navController.navigate(Ayuda) },
                 onLogout = { navController.navegarLimpiando(Login) }
             )
         }
@@ -101,6 +112,13 @@ fun NavigationWrapper() {
                 authService = authService,
                 repo = repo,
                 navigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Config ruta Ayuda: el botón vuelve al menú principal
+        composable<Ayuda> {
+            AyudaScreen(
+                navigateToHome = { navController.popBackStack() }
             )
         }
     }
